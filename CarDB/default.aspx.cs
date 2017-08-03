@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Data.SqlClient;
+using System.Web.Configuration;
 
 namespace CarDB
 {
@@ -13,18 +14,29 @@ namespace CarDB
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            SqlConnection conn = new SqlConnection(WebConfigurationManager.ConnectionStrings["MileageDBConnectionString"].ConnectionString);
 
+            SqlCommand comm = new SqlCommand("SELECT * FROM CarTable", conn);
+
+            conn.Open();
+            SqlDataReader reader = comm.ExecuteReader();
+
+            CarList.DataSource = reader;
+            CarList.DataBind();
+
+            reader.Close();
+            conn.Close();
         }
 
         protected void LinkButton1_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         protected void CarList_ItemCommand(object source, DataListCommandEventArgs e)
         {
             var theCarID = e.CommandArgument.ToString();
-            if (theCarID!="")
+            if (theCarID != "")
             {
                 DeleteACar(theCarID);
                 Response.Redirect("default.aspx");
@@ -40,22 +52,22 @@ namespace CarDB
         {
             SqlConnection conn;
             SqlCommand comm;
-            conn = new SqlConnection("Server=WINDOWS-21FI1FO\\DBA130;" + "Database=MileageDB;Integrated Security=True");
-            comm = new SqlCommand("DELETE FROM CarTable WHERE CarID = @theCarID limit 1", conn);
+            conn = new SqlConnection(WebConfigurationManager.ConnectionStrings["MileageDBConnectionString"].ConnectionString);
+            comm = new SqlCommand("DELETE FROM CarTable WHERE CarID = @theCarID", conn);
 
             comm.Parameters.Add("@theCarID", System.Data.SqlDbType.VarChar);
 
             conn.Open();
             comm.ExecuteNonQuery();
             conn.Close();
-            
+
         }
 
         protected void ButtonAdd_Click(object sender, EventArgs e)
         {
             SqlConnection conn;
             SqlCommand comm;
-            conn = new SqlConnection("Server=WINDOWS-21FI1FO\\DBA130;" + "Database=MileageDB;Integrated Security=True");
+            conn = new SqlConnection(WebConfigurationManager.ConnectionStrings["MileageDBConnectionString"].ConnectionString);
 
             comm = new SqlCommand("INSERT INTO CarTable (Car, Manufact, MPG) VALUES (@CarMake, @Manafacture, @MPG)", conn);
 
@@ -72,5 +84,6 @@ namespace CarDB
 
             Response.Redirect("default.aspx");
         }
+
     }
 }
